@@ -39,6 +39,9 @@ slAtrMult: 0.2
 maxRiskPct: 0.02
 minAtrPct: 0.002
 feeSlippagePct: 0.0016
+useHtfFilter: false
+htfGranularity: 1H
+htfMode: ema-close
 ```
 
 Edit `cfg` at the top of `bitget-backtest.js` to test params.
@@ -78,3 +81,21 @@ Expectancy: +0.230R
 ```
 
 Change one thing at a time. Jangan jadi tuyul CPU.
+
+## HTF regime filter tests
+
+Enable `useHtfFilter` to only take 30m entries during higher-timeframe bullish regimes.
+
+```text
+Test 25: useHtfFilter true, htfGranularity 1H, htfMode ema-close
+Test 26: useHtfFilter true, htfGranularity 4H, htfMode ema-close
+Test 27: useHtfFilter true, htfGranularity 1H, htfMode close-only
+```
+
+Modes:
+
+```text
+ema-close  = HTF EMA50 > EMA200 and HTF close > EMA200
+ema-only   = HTF EMA50 > EMA200
+close-only = HTF close > EMA200
+```

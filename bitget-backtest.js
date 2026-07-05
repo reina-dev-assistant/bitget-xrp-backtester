@@ -3,6 +3,7 @@
 const SYMBOL = 'XRPUSDT';
 const PRODUCT_TYPE = 'USDT-FUTURES';
 const GRANULARITY = '30m';
+const HTF_GRANULARITY = '1H';
 const START = '2026-01-01T00:00:00Z';
 const END = new Date().toISOString();
 
@@ -21,6 +22,9 @@ const cfg = {
   maxRiskPct: 0.02,
   minAtrPct: 0.002,
   feeSlippagePct: 0.0016,
+  useHtfFilter: false,
+  htfGranularity: HTF_GRANULARITY,
+  htfMode: 'ema-close', // 'ema-close', 'ema-only', 'close-only'
 };
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -50,8 +54,15 @@ function atr(candles, len) {
   return sma(tr, len);
 }
 
-async function fetchCandles() {
-  const stepMs = 200 * 30 * 60 * 1000;
+function granularityMs(granularity) {
+  if (granularity === '30m') return 30 * 60 * 1000;
+  if (granularity === '1H') return 60 * 60 * 1000;
+  if (granularity === '4H') return 4 * 60 * 60 * 1000;
+  throw new Error(`Unsupported granularity: ${granularity}`);
+}
+
+async function fetchCandles(granularity = GRANULARITY) {
+  const stepMs = 200 * granularityMs(granularity);
   let cursor = Date.parse(START);
   const end = Date.parse(END);
   const rows = [];
@@ -61,7 +72,7 @@ async function fetchCandles() {
     const qs = new URLSearchParams({
       symbol: SYMBOL,
       productType: PRODUCT_TYPE,
-      granularity: GRANULARITY,
+      granularity,
       startTime: String(cursor),
       endTime: String(batchEnd),
       limit: '200',
@@ -72,7 +83,7 @@ async function fetchCandles() {
     const json = await res.json();
     if (json.code !== '00000') throw new Error(JSON.stringify(json));
     rows.push(...json.data);
-    cursor = batchEnd + 30 * 60 * 1000;
+    cursor = batchEnd + granularityMs(granularity);
     await sleep(80);
   }
 
@@ -87,7 +98,31 @@ async function fetchCandles() {
   }));
 }
 
-function backtest(candles) {
+function buildHtfTrend(candles, htfCandles) {
+  if (!cfg.useHtfFilter) return candles.map(() => true);
+
+  const closes = htfCandles.map((c) => c.close);
+  const htfEma50 = ema(closes, cfg.emaFast);
+  const htfEma200 = ema(closes, cfg.emaSlow);
+  const htf = htfCandles.map((c, i) => ({
+    ms: Date.parse(c.time),
+    ok:
+      cfg.htfMode === 'ema-only'
+        ? htfEma50[i] > htfEma200[i]
+        : cfg.htfMode === 'close-only'
+          ? c.close > htfEma200[i]
+          : htfEma50[i] > htfEma200[i] && c.close > htfEma200[i],
+  }));
+
+  let j = 0;
+  return candles.map((c) => {
+    const t = Date.parse(c.time);
+    while (j + 1 < htf.length && htf[j + 1].ms <= t) j++;
+    return htf[j]?.ok ?? false;
+  });
+}
+
+function backtest(candles, htfCandles = []) {
   const closes = candles.map((c) => c.close);
   const volumes = candles.map((c) => c.volume);
   const ema50 = ema(closes, cfg.emaFast);
@@ -95,6 +130,7 @@ function backtest(candles) {
   const atr14 = atr(candles, cfg.atrLen);
   const volMa = sma(volumes, cfg.volLen);
   const trades = [];
+  const htfTrendOk = buildHtfTrend(candles, htfCandles);
   let nextAllowed = 0;
 
   for (let i = Math.max(cfg.emaSlow, cfg.breakoutLen, cfg.atrLen, cfg.volLen); i < candles.length - 1; i++) {
@@ -109,6 +145,7 @@ function backtest(candles) {
 
     const signal =
       ema50[i] > ema200[i] &&
+      htfTrendOk[i] &&
       c.close > ema50[i] &&
       c.close > ema200[i] &&
       c.close > resistance &&
@@ -173,7 +210,8 @@ function summarize(trades) {
 
 (async () => {
   const candles = await fetchCandles();
-  const trades = backtest(candles);
+  const htfCandles = cfg.useHtfFilter ? await fetchCandles(cfg.htfGranularity) : [];
+  const trades = backtest(candles, htfCandles);
   const summary = summarize(trades);
   console.log(JSON.stringify({ summary, trades }, null, 2));
 })().catch((e) => {

@@ -54,63 +54,45 @@ volumeMult: 1.3 / 1.5 / 2.0
 maxHoldBars: 8 / 12 / 18
 ```
 
-## Final candidate v2 (after HTF regime filter)
+## Final candidate — 30m Breakout Long
 
-```text
-breakoutLen: 30
-volumeMult: 1.3
-rr: 1.5
-maxHoldBars: 8
--closePosMin: 0.65
-upperWickMult: 1.2
-slAtrMult: 0.2
-maxRiskPct: 0.02
-minAtrPct: 0.002
-useHtfFilter: true
-htfGranularity: 1H
-htfMode: ema-close
+Setelah eksperimen 5m, 15m, short breakout, dan mean reversion — satu-satunya yang punya edge konsisten:
+
+Strategy: **30m breakout long, hanya saat HTF bullish (1H EMA50 > EMA200 & close > EMA200)**.
+
+Config final:
+
+```js
+breakoutLen: 30,
+volumeMult: 1.3,
+rr: 1.5,
+maxHoldBars: 8,
+closePosMin: 0.65,
+upperWickMult: 1.2,
+slAtrMult: 0.2,
+maxRiskPct: 0.02,
+minAtrPct: 0.002,
+useHtfFilter: true,
+htfGranularity: '1H',
+htfMode: 'ema-close',
 ```
 
-Backtest 2025–now (HTF enabled):
+### Backtest 2025–now (all regimes)
 
 ```text
-Trades: 63
-Winrate: 49.21%
-Profit Factor: 1.55
-Net Return: +13.08%
-Max Drawdown: 8.11%
-Avg Trade: +0.202%
-Expectancy: +0.112R
+Trades: 63    Winrate: 49.21%
+PF: 1.55      Net: +13.08%
+DD: 8.11%     Avg: +0.202%
+Exp: +0.112R
 ```
 
-Backtest 2026 only (bullish regime):
+### Backtest 2026 only (bullish)
 
 ```text
-Trades: 17
-Winrate: 64.71%
-Profit Factor: 4.82
-Net Return: +10.03%
-Max Drawdown: 0.75%
-Avg Trade: +0.569%
-Expectancy: +0.393R
+Trades: 17    Winrate: 64.71%
+PF: 4.82      Net: +10.03%
+DD: 0.75%     Avg: +0.569%
+Exp: +0.393R
 ```
 
-Change one thing at a time. Jangan jadi tuyul CPU.
-
-## HTF regime filter tests
-
-Enable `useHtfFilter` to only take 30m entries during higher-timeframe bullish regimes.
-
-```text
-Test 25: useHtfFilter true, htfGranularity 1H, htfMode ema-close
-Test 26: useHtfFilter true, htfGranularity 4H, htfMode ema-close
-Test 27: useHtfFilter true, htfGranularity 1H, htfMode close-only
-```
-
-Modes:
-
-```text
-ema-close  = HTF EMA50 > EMA200 and HTF close > EMA200
-ema-only   = HTF EMA50 > EMA200
-close-only = HTF close > EMA200
-```
+**Cron signal checker** aktif tiap 30 menit — deliver ke Telegram saat ada signal. No-trade saat HTF non-bullish.

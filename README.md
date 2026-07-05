@@ -39,7 +39,7 @@ slAtrMult: 0.2
 maxRiskPct: 0.02
 minAtrPct: 0.002
 feeSlippagePct: 0.0016
-useHtfFilter: false
+useHtfFilter: true
 htfGranularity: 1H
 htfMode: ema-close
 ```
@@ -54,30 +54,45 @@ volumeMult: 1.3 / 1.5 / 2.0
 maxHoldBars: 8 / 12 / 18
 ```
 
-Current best from Jan-Jul 2026 tests:
+## Final candidate v2 (after HTF regime filter)
 
 ```text
 breakoutLen: 30
 volumeMult: 1.3
 rr: 1.5
 maxHoldBars: 8
-closePosMin: 0.65
+-closePosMin: 0.65
 upperWickMult: 1.2
 slAtrMult: 0.2
 maxRiskPct: 0.02
 minAtrPct: 0.002
+useHtfFilter: true
+htfGranularity: 1H
+htfMode: ema-close
 ```
 
-Backtest snapshot:
+Backtest 2025–now (HTF enabled):
 
 ```text
-Trades: 24
-Winrate: 54.17%
-Profit Factor: 2.79
-Net Return: +8.53%
-Max Drawdown: 0.99%
-Avg Trade: +0.346%
-Expectancy: +0.230R
+Trades: 63
+Winrate: 49.21%
+Profit Factor: 1.55
+Net Return: +13.08%
+Max Drawdown: 8.11%
+Avg Trade: +0.202%
+Expectancy: +0.112R
+```
+
+Backtest 2026 only (bullish regime):
+
+```text
+Trades: 17
+Winrate: 64.71%
+Profit Factor: 4.82
+Net Return: +10.03%
+Max Drawdown: 0.75%
+Avg Trade: +0.569%
+Expectancy: +0.393R
 ```
 
 Change one thing at a time. Jangan jadi tuyul CPU.

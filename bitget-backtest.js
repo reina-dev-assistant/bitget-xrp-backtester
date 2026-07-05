@@ -4,7 +4,7 @@ const SYMBOL = 'XRPUSDT';
 const PRODUCT_TYPE = 'USDT-FUTURES';
 const GRANULARITY = '30m';
 const HTF_GRANULARITY = '1H';
-const START = '2026-01-01T00:00:00Z';
+const START = '2025-01-01T00:00:00Z';
 const END = new Date().toISOString();
 
 const cfg = {
@@ -22,9 +22,9 @@ const cfg = {
   maxRiskPct: 0.02,
   minAtrPct: 0.002,
   feeSlippagePct: 0.0016,
-  useHtfFilter: false,
+  useHtfFilter: true,
   htfGranularity: HTF_GRANULARITY,
-  htfMode: 'ema-close', // 'ema-close', 'ema-only', 'close-only'
+  htfMode: 'ema-close',
 };
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

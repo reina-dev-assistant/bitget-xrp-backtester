@@ -7,19 +7,19 @@ const START = '2026-01-01T00:00:00Z';
 const END = new Date().toISOString();
 
 const cfg = {
-  breakoutLen: 20,
+  breakoutLen: 30,
   emaFast: 50,
   emaSlow: 200,
   atrLen: 14,
   volLen: 20,
-  volumeMult: 1.5,
+  volumeMult: 1.3,
   rr: 1.5,
-  maxHoldBars: 12,
-  closePosMin: 0.70,
+  maxHoldBars: 8,
+  closePosMin: 0.65,
   upperWickMult: 1.2,
-  slAtrMult: 0.3,
+  slAtrMult: 0.2,
   maxRiskPct: 0.02,
-  minAtrPct: 0.003,
+  minAtrPct: 0.002,
   feeSlippagePct: 0.0016,
 };
 

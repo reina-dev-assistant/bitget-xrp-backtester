@@ -33,6 +33,8 @@ breakoutLen: 20
 volumeMult: 1.5
 rr: 1.5
 maxHoldBars: 12
+closePosMin: 0.70
+upperWickMult: 1.2
 feeSlippagePct: 0.0016
 ```
 
@@ -44,6 +46,25 @@ Suggested small tests:
 rr: 1.2 / 1.5 / 2.0
 volumeMult: 1.3 / 1.5 / 2.0
 maxHoldBars: 8 / 12 / 18
+```
+
+Current best from Jan-Jul 2026 tests:
+
+```text
+breakoutLen: 30
+volumeMult: 1.3
+rr: 1.5
+maxHoldBars: 8
+closePosMin: 0.70
+upperWickMult: 1.2
+```
+
+Next candle-strength tests:
+
+```text
+Test 10: closePosMin 0.65, upperWickMult 1.2
+Test 11: closePosMin 0.70, upperWickMult 1.2
+Test 12: closePosMin 0.75, upperWickMult 1.0
 ```
 
 Change one thing at a time. Jangan jadi tuyul CPU.

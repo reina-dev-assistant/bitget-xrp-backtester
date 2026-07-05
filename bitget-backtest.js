@@ -15,6 +15,8 @@ const cfg = {
   volumeMult: 1.5,
   rr: 1.5,
   maxHoldBars: 12,
+  closePosMin: 0.70,
+  upperWickMult: 1.2,
   slAtrMult: 0.3,
   maxRiskPct: 0.02,
   minAtrPct: 0.003,
@@ -112,8 +114,8 @@ function backtest(candles) {
       c.close > resistance &&
       c.volume > cfg.volumeMult * volMa[i] &&
       c.close > c.open &&
-      closePos >= 0.70 &&
-      upperWick <= body * 1.2 &&
+      closePos >= cfg.closePosMin &&
+      upperWick <= body * cfg.upperWickMult &&
       atr14[i] / c.close >= cfg.minAtrPct;
 
     if (!signal) continue;
